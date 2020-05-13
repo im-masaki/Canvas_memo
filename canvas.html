@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Canvas Memo</title>
+        <style>
+        #slider {
+            width: 600px;
+        }
+        </style>
+    </head>
+    
+    <body>
+        <section>
+            <h1>Canvas Memo</h1>
+            <hr>
+            <nav>
+
+                <div style="float:left;">線の設定：<input id="weight" type="range" min="0" max="100" width="200" value="1" />
+                    
+                    <input type="color" id="colors" list="color1" value="#000000">
+
+                    <datalist id="color1">
+                        <option value="#000000"></option>
+                        <option value="#808080"></option>
+                        <option value="#C0C0C0"></option>
+                        <option value="#FFFFFF"></option>
+                        <option value="#0000FF"></option>
+                        <option value="#000080"></option>
+                        <option value="#008080"></option>
+                        <option value="#80bfff"></option>
+                        <option value="#008000"></option>
+                        <option value="#00FF00"></option>
+                        <option value="#00FFFF"></option>
+                        <option value="#FFFF00"></option>
+                        <option value="#FF0000"></option>
+                        <option value="#FF00FF"></option>
+                        <option value="#808000"></option>                    
+                    </datalist>
+
+                    <select id="img_set">
+                        <option value="./img/memo_jpg.png">背景0</option>
+                        <!-- <option value="./images/venezia.png">背景１</option>
+                        <option value="./images/venezia2.png">背景２</option>
+                        <option value="./images/001.png">背景３</option> -->
+                    </select>
+                </div>
+                <div style="clear: both;float:left;">操作：
+                    <button id="save_btn">セーブ</button>
+                    <button id="clear_btn">クリアー</button>
+                    <span id="cs"></span>
+                </div>
+            </nav>
+            <div style="clear: both;float:left;">
+                <canvas id="drowarea" width="500" height="500" style="border:1px solid blue;"></canvas>
+            </div>
+            
+            <div style="float: left;width: 500px;height:500px;border: 1px solid #CCC;">
+                <div>
+                    <select id="ftype">
+                        <option value="PNG">PNG</option><option value="JPG">JPG</option><option value="BMP">BMP</option>   
+                    </select>
+                    <button onclick="saveData();">OUTPUT</button></div>
+                <div id="tmp_canvas"></div>
+            </div>
+        </section>
+        <script src="js/base64.js"></script>
+        <script src="js/canvas2image.js"></script>
+        <script>
+            //初期化
+            var canvas_mouse_event = false;
+            var txy   = 0;  //iPadなどは15＋すると良いかも
+            var oldX  = 0;  //１つ前の座標を代入
+            var oldY  = 0;  //１つ前の座標を代入
+            var color = "#000000";
+            var bold_line = 1;
+            var can = document.getElementById("drowarea");
+            var context = can.getContext("2d");
+            
+            //Image
+            var img = new Image();
+            img.src = "./img/memo_jpg.png";
+            img.onload = function(){
+                context.drawImage(img,0,0);
+            };
+            
+            //キャンパスクリア
+            var canClear = function (){
+                context.beginPath();
+                context.clearRect(0, 0, can.width, can.height);
+            };
+
+            //MouseEvent[mouseDown]
+            can.addEventListener("mousedown", function(e){
+                oldX = e.offsetX;
+                oldY = e.offsetY-txy;
+                canvas_mouse_event=true;
+            },false);
+            
+            //MouseEvent[mouseMove]
+            can.addEventListener("mousemove", function (e){
+                if(canvas_mouse_event==true){
+                    var px = e.offsetX;
+                    var py = e.offsetY - txy;
+                    context.strokeStyle = color;
+                    context.lineWidth = bold_line;
+                    context.lineJoin= "round";  // 連結部分を丸にする         
+                    context.lineCap = "round";
+                    context.beginPath();
+                    context.moveTo(oldX, oldY);
+                    context.lineTo(px, py);
+                    context.stroke();
+                    context.fill();
+                    oldX = px;
+                    oldY = py;
+                }
+            }, false);	
+            
+            //MouseEvent[mouseUp]
+            can.addEventListener("mouseup", function(e){
+                canvas_mouse_event=false;
+            }, false);
+            
+            //MouseEvent[mouseout]
+            can.addEventListener("mouseout", function(e){
+                canvas_mouse_event=false;
+            }, false);
+            
+            //色SelectAtion
+            document.getElementById('colors').onchange = function (){
+                color = document.getElementById("colors").value;
+            };
+
+            //線太さSelectAction
+            document.getElementById('weight').onchange = function (){
+                bold_line = parseInt(document.getElementById("weight").value);
+            };
+
+            //画像SelectAction
+            document.getElementById('img_set').onchange = function (){
+                canClear(); //Canvasクリア
+                var img_temp = new Image();
+                img_temp.src = document.getElementById('img_set').value;
+                img_temp.onload = function(){
+                    context.drawImage(img_temp,0,0);
+                }
+            };
+
+            //クリアーボタンAction
+            document.getElementById('clear_btn').onclick = function (){
+                canClear();
+            };
+
+
+            //---------------------------------------------------------------
+            //おまけ機能の紹介！
+            //保存機能
+            //---------------------------------------------------------------
+            document.getElementById('save_btn').onclick = function (){
+                var getval = can.toDataURL();
+                if(localStorage.getItem("gcount")){
+                }else{
+                    localStorage.setItem( "gcount", 0);
+                }
+                var count  = localStorage.getItem("gcount");
+                var gid    = parseInt(count) + 1;
+                localStorage.setItem( gid.toString(), getval );
+                localStorage.setItem( "gcount", gid );
+                historyUpdate();
+            };
+            
+            var historyUpdate = function (){
+               var c = localStorage.getItem("gcount");
+               var str = '<select id="load_canvas_list" onchange="select_data();">';
+               for(var i=0; i<=c; i++){
+                   str += '<option value="' + i + '"> ' + i + ' </option>';
+               }
+               str += '</select>';
+               document.getElementById('cs').innerHTML = str;
+            };
+            
+            var select_data = function (){
+                var img = localStorage.getItem( document.getElementById('load_canvas_list').value );
+                if(document.getElementById("tmp_img")){
+                    var d = document.getElementById("tmp_canvas"); 
+                    var elem = document.getElementById("tmp_img"); 
+                    d.removeChild(elem);
+                }
+                var ei = document.createElement("img");
+                ei.src = img;
+                ei.id = "tmp_img";
+                document.getElementById("tmp_canvas").appendChild(ei);
+            };
+            
+            // FILE保存処理
+            var saveData = function (){
+                var str = document.getElementById('ftype').value;
+                var can = document.getElementById("tmp_img");
+                if("PNG"==str){
+                    Canvas2Image.saveAsPNG(can, false, 500, 500); 
+                }else if("JPG"==str){
+                    Canvas2Image.saveAsJPEG(can, false, 500, 500);
+                }else{
+                    Canvas2Image.saveAsBMP(can, false, 500, 500);
+                }
+            };
+            
+            window.onload = function(){
+                historyUpdate();
+            };
+    </script>
+    </body>
+</html>
