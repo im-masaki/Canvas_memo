@@ -1,25 +1,23 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Canvas Memo</title>
-        <style>
-        #slider {
-            width: 600px;
-        }
-        </style>
-    </head>
-    
-    <body>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
         <section>
             <h1>Canvas Memo</h1>
             <hr>
             <nav>
 
-                <div style="float:left;">線の設定：<input id="weight" type="range" min="0" max="100" width="200" value="1" />
-                    
-                    <input type="color" id="colors" list="color1" value="#000000">
-
+                <div class="text">
+                    線の設定：<input id="weight" type="range" min="0" max="20" width="200" value="1">
+ 
+                    色の設定：<input type="color" id="colors" list="color1" value="#000000">
+                
                     <datalist id="color1">
                         <option value="#000000"></option>
                         <option value="#808080"></option>
@@ -37,30 +35,40 @@
                         <option value="#FF00FF"></option>
                         <option value="#808000"></option>                    
                     </datalist>
-
-                    <select id="img_set">
-                        <option value="./img/memo_img.png">背景0</option>
-                        <!-- <option value="./images/venezia.png">背景１</option>
-                        <option value="./images/venezia2.png">背景２</option>
-                        <option value="./images/001.png">背景３</option> -->
-                    </select>
                 </div>
-                <div style="clear: both;float:left;">操作：
-                    <button id="save_btn">セーブ</button>
-                    <button id="clear_btn">クリアー</button>
+
+                <div style="clear: both;float:left;" class="text">背景変更：
+                    <select id="img_set">
+                        <option value="">白紙</option>
+                        <option value="./img/memo_img.png">罫線</option>
+                        <option value="./img/memo2_img.png">方眼線</option>
+                    </select> 
+                </div>
+
+                <div style="clear: both;float:left;" class="text">
+                    操作設定：
+                    <button id="save_btn">Save</button>
+                    <button id="clear_btn">Clear</button>
                     <span id="cs"></span>
                 </div>
+
             </nav>
+
             <div style="clear: both;float:left;">
-                <canvas id="drowarea" width="500" height="500" style="border:1px solid blue;"></canvas>
+                <canvas id="drowarea" width="500" height="500" style="border:3px solid blue;"></canvas>
             </div>
             
-            <div style="float: left;width: 500px;height:500px;border: 1px solid #CCC;">
-                <div>
-                    <select id="ftype">
-                        <option value="PNG">PNG</option><option value="JPG">JPG</option><option value="BMP">BMP</option>   
-                    </select>
-                    <button onclick="saveData();">OUTPUT</button></div>
+            <div style="float: left;width: 500px;height:500px;border: 3px solid #CCC;">
+                    <div>
+                        <select id="ftype">
+                            <option value="PNG">PNG</option>
+                            <option value="JPG">JPG</option>
+                            <option value="BMP">BMP</option>   
+                        </select>
+                    </div>
+                    <div>
+                        <button onclick="saveData();">Downlord</button>
+                    </div>
                 <div id="tmp_canvas"></div>
             </div>
         </section>
@@ -78,11 +86,11 @@
             var context = can.getContext("2d");
             
             //Image
-            var img = new Image();
-            img.src = "./img/memo_img.png";
-            img.onload = function(){
-                context.drawImage(img,0,0);
-            };
+            // var img = new Image();
+            // img.src = "./img/memo_img.png";
+            // img.onload = function(){
+            //     context.drawImage(img,0,0);
+            // };
             
             //キャンパスクリア
             var canClear = function (){
@@ -152,10 +160,7 @@
             };
 
 
-            //---------------------------------------------------------------
-            //おまけ機能の紹介！
             //保存機能
-            //---------------------------------------------------------------
             document.getElementById('save_btn').onclick = function (){
                 var getval = can.toDataURL();
                 if(localStorage.getItem("gcount")){
